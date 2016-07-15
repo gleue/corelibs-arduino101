@@ -49,6 +49,7 @@ written	KEYWORD2
 subscribed	KEYWORD2
 
 begin	KEYWORD2
+beginBeacon	KEYWORD2
 getAdvertisingLength	KEYWORD2
 getAdvertising	KEYWORD2
 setAdvertisedServiceUuid	KEYWORD2
