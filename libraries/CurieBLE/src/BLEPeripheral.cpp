@@ -126,6 +126,27 @@ bool BLEPeripheral::begin()
     return (_startAdvertising() == BLE_STATUS_SUCCESS);
 }
 
+bool BLEPeripheral::beginBeacon(const uint8_t *uuid, uint8_t major, uint8_t minor)
+{
+    BleStatus status;
+
+    status = _init();
+    if (status != BLE_STATUS_SUCCESS) {
+        return false;
+    }
+
+    /* Populate advertising data for iBeacon
+     */
+    _advDataInitBeacon(uuid, major, minor);
+
+    status = ble_client_gap_wr_adv_data(_adv_data, _adv_data_len);
+    if (BLE_STATUS_SUCCESS != status) {
+        return false;
+    }
+
+    return (_startAdvertising() == BLE_STATUS_SUCCESS);
+}
+
 void
 BLEPeripheral::poll()
 {
@@ -375,6 +396,49 @@ BLEPeripheral::_advDataInit(void)
 
         _adv_data_len += block_len;
     }
+}
+
+void
+BLEPeripheral::_advDataInitBeacon(const uint8_t *uuid, uint8_t major, uint8_t minor)
+{
+    uint8_t *adv_tmp = _adv_data;
+
+    memset(_adv_data, 0, sizeof(_adv_data));
+
+    /* Add flags */
+    *adv_tmp++ = 2;
+    *adv_tmp++ = BLE_ADV_TYPE_FLAGS;
+    *adv_tmp++ = BLE_SVC_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
+    _adv_data_len = 3;
+
+	/* Add iBeacon part */
+	*adv_tmp++ = 0x1a; _adv_data_len++;
+
+	// Manufacturer specific data
+	*adv_tmp++ = 0xff; _adv_data_len++;
+	
+	// Apple
+	*adv_tmp++ = 0x4c; _adv_data_len++;
+	*adv_tmp++ = 0x00; _adv_data_len++;
+	
+	// iBeacon ADV ident
+	*adv_tmp++ = 0x02; _adv_data_len++;
+	*adv_tmp++ = 0x15; _adv_data_len++;
+	
+	// iBeacon proximity UUID
+	memcpy(adv_tmp, uuid, 16); _adv_data_len += 16;
+	adv_tmp += 16;
+	
+	// iBeacon major
+	*adv_tmp++ = 0x00; _adv_data_len++;
+	*adv_tmp++ = major; _adv_data_len++;
+	
+	// iBeacon minor
+	*adv_tmp++ = 0x00; _adv_data_len++;
+	*adv_tmp++ = minor; _adv_data_len++;
+	
+	// TX power
+	*adv_tmp++ = 0xc5; _adv_data_len++;
 }
 
 BleStatus

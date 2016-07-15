@@ -178,6 +178,13 @@ public:
     bool begin(void);
 
     /**
+     * Start advertising iBeacon w/ proximity UUID, major and minor
+     *
+     * @return bool indicating success or error
+     */
+    bool beginBeacon(const uint8_t *uuid, uint8_t major, uint8_t minor);
+
+    /**
      * Poll the peripheral for events
      */
     void poll(void);
@@ -221,6 +228,7 @@ private:
     BleStatus _stop(void);
 
     void _advDataInit(void);
+    void _advDataInitBeacon(const uint8_t *uuid, uint8_t major, uint8_t minor);
 
 private:
 
